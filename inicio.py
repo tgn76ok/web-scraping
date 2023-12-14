@@ -16,7 +16,7 @@ chrome_options.page_load_strategy = 'eager'
 
 navegador = webdriver.Chrome(options=chrome_options)
 
-navegador.get("https://www.polemicaparaiba.com.br/politica/os-melhores-de-2023-na-sua-opiniao-qual-foi-o-melhor-e-mais-atuante-deputado-federal-da-paraiba-neste-ano-vote/")
+navegador.get("sua urls")
 
 # WebDriverWait(navegador, 25).until(EC.element_to_be_clickable((By.ID,"choice-713b8dc9-0de5-4623-9005-f5971115fd4c-selector")))
 # WebDriverWait(navegador, 25).until(EC.element_to_be_clickable((By.XPATH,"/div[4]/button")))
