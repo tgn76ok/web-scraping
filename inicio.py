@@ -30,10 +30,9 @@ def votar():
     try:
         js_code = "document.getElementById('choice-7ac78479-8853-456d-9a67-614dc38fd10f-selector').click();"
         navegador.execute_script(js_code)
-        sleep(20)
+        sleep(2)
         js_code1 = "document.querySelector('button.totalpoll-button.totalpoll-button-primary.totalpoll-buttons-vote').click();"
         navegador.execute_script(js_code1)
-        sleep(20)
 
         print(f'--------------------------')
         print(f'Processor deu bom')
