@@ -22,16 +22,18 @@ def votar():
     navegador = webdriver.Chrome(options=chrome_options,service=Service(ChromeDriverManager().install()))
 
     start_time = time()
-    navegador.get("https://www.polemicaparaiba.com.br/sem-categoria/os-melhores-de-2023-na-sua-opiniao-qual-foi-o-melhor-e-mais-atuante-deputado-estadual-da-paraiba-neste-ano-vote/")
+    navegador.get("https://www.polemicaparaiba.com.br/politica/enquete-polemica-paraiba-em-que-voce-votaria-para-governar-a-paraiba-caso-as-eleicoes-de-2026-fossem-hoje-participe/?utm_source=whatsapp&utm_medium=referral&utm_campaign=share_alongisde")
     # WebDriverWait(navegador, 25).until(EC.element_to_be_clickable((By.ID,"choice-713b8dc9-0de5-4623-9005-f5971115fd4c-selector")))
     # WebDriverWait(navegador, 25).until(EC.element_to_be_clickable((By.XPATH,"/div[4]/button")))
 
     # Aguarda até que o elemento esteja presente na página
     try:
-        js_code = "document.getElementById('choice-a9b2dfb5-bca6-4ee9-97f3-0829abb1e10d-selector').click();"
+        js_code = "document.getElementById('choice-7ac78479-8853-456d-9a67-614dc38fd10f-selector').click();"
         navegador.execute_script(js_code)
+        sleep(20)
         js_code1 = "document.querySelector('button.totalpoll-button.totalpoll-button-primary.totalpoll-buttons-vote').click();"
         navegador.execute_script(js_code1)
+        sleep(20)
 
         print(f'--------------------------')
         print(f'Processor deu bom')
