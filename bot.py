@@ -35,19 +35,18 @@ def start_tor():
             take_ownership=True,
         )
         return tor_process
-    except:
-        print("[INFO] Tor já está rodando ou ocorreu um erro ao iniciar")
+    except Exception as e:
+        print("[INFO] Tor já está rodando ou ocorreu um erro ao iniciar:", e)
         return None
 
 def openDriver():
-    """Abre o navegador Chrome configurado para usar o Tor"""
+    """Abre o navegador Chrome configurado para usar o Tor com uma nova identidade"""
     temp_profile = tempfile.mkdtemp()
     
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument(f"--user-data-dir={temp_profile}")
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument("--disable-cache")
-    chrome_options.add_argument("--headless")
     chrome_options.add_argument("--incognito")
     
     # Configura o proxy para usar o Tor
@@ -71,10 +70,17 @@ def openDriver():
     
     return driver
 
+def clear_browser_data(driver):
+    """Limpa cookies, localStorage e sessionStorage para simular nova identidade"""
+    driver.delete_all_cookies()
+    driver.execute_script("window.localStorage.clear();")
+    driver.execute_script("window.sessionStorage.clear();")
+    print("[INFO] Dados do navegador limpos, simulando nova identidade.")
+
 def loadPage(driver):
     """Carrega a página da enquete"""
     driver.get("https://www.bastidoresdapoliticapb.com.br/enquete/")
-    # time.sleep(random.uniform(2, 5))  # Espera aleatória para parecer humano
+    # Espera aleatória para simular comportamento humano
 
 def vote(driver):
     """Realiza o voto na enquete"""
@@ -84,22 +90,18 @@ def vote(driver):
             EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".apm-choosing"))
         )
         
-        # Escolhe uma opção aleatória (entre 0 e 2)
-        print(f"[INFO] Clicando na opção {2}...")
+
+        print(f"[INFO] Clicando na opção {3}...")
         driver.execute_script(f"""
             document.querySelectorAll('.apm-choosing input[type="radio"]')[{2}].click();
         """)
-        
-        # Espera um tempo aleatório antes de enviar
-        # time.sleep(random.uniform(1, 3))
         
         print("[INFO] Enviando voto...")
         driver.execute_script("""
             document.querySelector('.ays_finish_poll').click();
         """)
-        
-        # Verifica se o voto foi registrado
-        # time.sleep(3)
+    
+
         if "obrigado" in driver.page_source.lower():
             print("[SUCESSO] Voto registrado com sucesso!")
             return True
@@ -116,29 +118,21 @@ def main():
     
     try:
         while True:
-            print("\n" + "="*50)
+            print("\n" + "=" * 50)
             print("[INFO] Iniciando novo ciclo de voto")
             
-            # Obtém um novo IP
+            # Obtém um novo IP via Tor
             get_new_tor_ip()
             print("[INFO] Novo circuito Tor estabelecido (novo IP)")
             
-            # Abre o navegador
             driver = openDriver()
             
             try:
-                # Carrega a página e vota
                 loadPage(driver)
                 vote(driver)
                 
-                # if success:
-                    # Tempo de espera aleatório entre votos bem-sucedidos
-                    # wait_time = random.randint(60, 180)  # 1-3 minutos
-                    # print(f"[INFO] Aguardando {wait_time} segundos antes do próximo voto...")
-                    # time.sleep(wait_time)
-                # else:
-                #     # Espera menos tempo se houve falha
-                #     time.sleep(30)
+                # Limpa os dados do navegador para simular nova identidade
+                clear_browser_data(driver)
                     
             finally:
                 driver.quit()
