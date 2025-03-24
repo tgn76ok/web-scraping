@@ -85,7 +85,6 @@ def vote(driver):
         )
         
         # Escolhe uma opção aleatória (entre 0 e 2)
-        choice = random.randint(0, 2)
         print(f"[INFO] Clicando na opção {2}...")
         driver.execute_script(f"""
             document.querySelectorAll('.apm-choosing input[type="radio"]')[{2}].click();
@@ -100,7 +99,7 @@ def vote(driver):
         """)
         
         # Verifica se o voto foi registrado
-        time.sleep(3)
+        # time.sleep(3)
         if "obrigado" in driver.page_source.lower():
             print("[SUCESSO] Voto registrado com sucesso!")
             return True
