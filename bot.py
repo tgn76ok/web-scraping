@@ -10,11 +10,16 @@ import stem.process
 from stem import Signal
 from stem.control import Controller
 import random
+import threading
+import time
+import sys
+
 
 # Configuração do Tor
 TOR_PORT = 9050
 CONTROL_PORT = 9051
 TOR_PASSWORD = "123"  # Altere para a senha que configurou no Tor
+SITE_URL = 'https://www.polemicaparaiba.com.br/politica/enquete-polemica-paraiba-com-duas-vagas-em-disputa-em-quem-voce-votaria-para-serem-os-proximos-senadores-da-paraiba/'
 
 def get_new_tor_ip():
     """Solicita um novo circuito Tor (novo IP)"""
@@ -48,6 +53,7 @@ def openDriver():
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument("--disable-cache")
     chrome_options.add_argument("--incognito")
+    chrome_options.add_argument("--headless")
     
     # Configura o proxy para usar o Tor
     chrome_options.add_argument(f'--proxy-server=socks5://127.0.0.1:{TOR_PORT}')
@@ -79,28 +85,71 @@ def clear_browser_data(driver):
 
 def loadPage(driver):
     """Carrega a página da enquete"""
-    driver.get("https://www.bastidoresdapoliticapb.com.br/enquete/")
-    # Espera aleatória para simular comportamento humano
+    driver.get(SITE_URL)
+
+def close_cookie_banner(driver):
+    """Fecha o banner de consentimento de cookies"""
+    try:
+        # Espera o banner aparecer (ajuste o tempo conforme necessário)
+        WebDriverWait(driver, 5).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "button.fc-button.fc-primary-button"))
+        )
+        # Executa JavaScript para clicar no botão de consentimento
+        driver.execute_script("document.querySelector('button.fc-button.fc-primary-button').click();")
+        print("[INFO] Banner de cookies fechado com sucesso")
+        return True
+    except Exception as e:
+        print(f"[AVISO] Não foi possível fechar o banner de cookies: {e}")
+        return False
+
+def click_read_more(driver):
+    """Clica no botão 'Leia mais' após fechar o banner"""
+    try:
+        # Espera o botão estar disponível
+        read_more_button = WebDriverWait(driver, 5).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "button.widget-btn"))
+        )
+        # Rola até o elemento para garantir visibilidade
+        driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", read_more_button)
+        
+        # Clica usando JavaScript para evitar problemas de sobreposição
+        driver.execute_script("arguments[0].click();", read_more_button)
+        print("[INFO] Botão 'Leia mais' clicado com sucesso")
+        return True
+    except Exception as e:
+        print(f"[AVISO] Não foi possível clicar no botão 'Leia mais': {e}")
+        return False
 
 def vote(driver):
     """Realiza o voto na enquete"""
     try:
-        print("[INFO] Aguardando opções da enquete...")
-        WebDriverWait(driver, 15).until(
-            EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".apm-choosing"))
+        print("[INFO] Aguardando o carregamento da enquete...")
+        
+        # Fecha o banner de cookies primeiro
+        close_cookie_banner(driver)
+        
+        click_read_more(driver)
+
+        
+        # 3. Continua com o processo de votação
+        print("[INFO] Aguardando o carregamento da enquete...")
+        WebDriverWait(driver, 7).until(
+            EC.presence_of_element_located((By.ID, "choice-bccc4ef4-3b1c-4705-afc4-0e46ad3db0f7-selector"))
         )
+
+        print("[INFO] Clicando na opção desejada...")
+        checkbox = driver.find_element(By.ID, "choice-bccc4ef4-3b1c-4705-afc4-0e46ad3db0f7-selector")
+        driver.execute_script("arguments[0].click();", checkbox)  # usa JS para garantir o clique
+
         
 
-        print(f"[INFO] Clicando na opção {3}...")
-        driver.execute_script(f"""
-            document.querySelectorAll('.apm-choosing input[type="radio"]')[{2}].click();
-        """)
-        
-        print("[INFO] Enviando voto...")
-        driver.execute_script("""
-            document.querySelector('.ays_finish_poll').click();
-        """)
+        print("[INFO] Clicando no botão Votar...")
+        vote_button = WebDriverWait(driver, 3).until(
+            EC.element_to_be_clickable((By.CLASS_NAME, "totalpoll-buttons-vote"))
+        )
+        driver.execute_script("arguments[0].click();", vote_button)
     
+        time.sleep(1)
 
         if "obrigado" in driver.page_source.lower():
             print("[SUCESSO] Voto registrado com sucesso!")
@@ -114,16 +163,16 @@ def vote(driver):
         return False
 
 def main():
-    tor_process = start_tor()
+    # tor_process = start_tor()
     
     try:
         while True:
-            print("\n" + "=" * 50)
-            print("[INFO] Iniciando novo ciclo de voto")
+            # print("\n" + "=" * 50)
+            # print("[INFO] Iniciando novo ciclo de voto")
             
-            # Obtém um novo IP via Tor
-            get_new_tor_ip()
-            print("[INFO] Novo circuito Tor estabelecido (novo IP)")
+            # # Obtém um novo IP via Tor
+            # get_new_tor_ip()
+            # print("[INFO] Novo circuito Tor estabelecido (novo IP)")
             
             driver = openDriver()
             
@@ -139,9 +188,49 @@ def main():
                 
     except KeyboardInterrupt:
         print("\n[INFO] Encerrando script...")
-    finally:
-        if tor_process:
-            tor_process.terminate()
+        sys.exit()
+    # finally:
+        # if tor_process:
+        #     tor_process.terminate()
 
-while True:
-    main()
+
+running = True
+
+def threaded_main(thread_id):
+    while running:
+        print(f"[THREAD {thread_id}] Iniciando ciclo...")
+        driver = openDriver()
+
+        try:
+            loadPage(driver)
+            vote(driver)
+            clear_browser_data(driver)
+        except Exception as e:
+            print(f"[THREAD {thread_id}] Erro: {e}")
+        finally:
+            driver.quit()
+            print(f"[THREAD {thread_id}] Navegador fechado.")
+        
+
+def start_threads(n=15):
+    threads = []
+    for i in range(n):
+        t = threading.Thread(target=threaded_main, args=(i+1,))
+        t.start()
+        threads.append(t)
+    return threads
+
+if __name__ == "__main__":
+    try:
+        print("[INFO] Iniciando threads...")
+        threads = start_threads()
+
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\n[INFO] Encerrando script...")
+        running = False
+        for t in threads:
+            t.join()
+        print("[INFO] Todas as threads encerradas com sucesso.")
+        sys.exit()
