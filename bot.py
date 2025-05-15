@@ -19,7 +19,7 @@ import sys
 TOR_PORT = 9050
 CONTROL_PORT = 9051
 TOR_PASSWORD = "123"  # Altere para a senha que configurou no Tor
-SITE_URL = 'https://www.polemicaparaiba.com.br/politica/enquete-polemica-paraiba-com-duas-vagas-em-disputa-em-quem-voce-votaria-para-serem-os-proximos-senadores-da-paraiba/'
+SITE_URL = 'https://www.polemicaparaiba.com.br/politica/enquete-polemica-paraiba-em-quem-voce-votaria-para-ser-o-proximo-governador-da-paraiba/'
 
 def get_new_tor_ip():
     """Solicita um novo circuito Tor (novo IP)"""
@@ -99,7 +99,7 @@ def close_cookie_banner(driver):
         print("[INFO] Banner de cookies fechado com sucesso")
         return True
     except Exception as e:
-        print(f"[AVISO] Não foi possível fechar o banner de cookies: {e}")
+        print(f"[AVISO] Não foi possível fechar o banner de cookies")
         return False
 
 def click_read_more(driver):
@@ -117,7 +117,7 @@ def click_read_more(driver):
         print("[INFO] Botão 'Leia mais' clicado com sucesso")
         return True
     except Exception as e:
-        print(f"[AVISO] Não foi possível clicar no botão 'Leia mais': {e}")
+        print(f"[AVISO] Não foi possível clicar no botão Leia mais")
         return False
 
 def vote(driver):
@@ -134,11 +134,11 @@ def vote(driver):
         # 3. Continua com o processo de votação
         print("[INFO] Aguardando o carregamento da enquete...")
         WebDriverWait(driver, 7).until(
-            EC.presence_of_element_located((By.ID, "choice-bccc4ef4-3b1c-4705-afc4-0e46ad3db0f7-selector"))
+            EC.presence_of_element_located((By.ID, "choice-d6a33e0b-f11d-40d8-854b-b318f4cfa492-selector"))
         )
 
         print("[INFO] Clicando na opção desejada...")
-        checkbox = driver.find_element(By.ID, "choice-bccc4ef4-3b1c-4705-afc4-0e46ad3db0f7-selector")
+        checkbox = driver.find_element(By.ID, "choice-d6a33e0b-f11d-40d8-854b-b318f4cfa492-selector")
         driver.execute_script("arguments[0].click();", checkbox)  # usa JS para garantir o clique
 
         
@@ -148,8 +148,9 @@ def vote(driver):
             EC.element_to_be_clickable((By.CLASS_NAME, "totalpoll-buttons-vote"))
         )
         driver.execute_script("arguments[0].click();", vote_button)
-    
-        time.sleep(1)
+
+        time.sleep(5)
+
 
         if "obrigado" in driver.page_source.lower():
             print("[SUCESSO] Voto registrado com sucesso!")
@@ -212,7 +213,7 @@ def threaded_main(thread_id):
             print(f"[THREAD {thread_id}] Navegador fechado.")
         
 
-def start_threads(n=15):
+def start_threads(n=10):
     threads = []
     for i in range(n):
         t = threading.Thread(target=threaded_main, args=(i+1,))
@@ -222,6 +223,7 @@ def start_threads(n=15):
 
 if __name__ == "__main__":
     try:
+        get_new_tor_ip()    
         print("[INFO] Iniciando threads...")
         threads = start_threads()
 
