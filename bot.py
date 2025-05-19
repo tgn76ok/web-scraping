@@ -48,7 +48,7 @@ def openDriver():
     temp_profile = tempfile.mkdtemp()
     
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument(f"--user-data-dir={temp_profile}")
+    #chrome_options.add_argument(f"--user-data-dir={temp_profile}")
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument("--disable-cache")
     chrome_options.add_argument("--incognito")
@@ -192,7 +192,7 @@ def start_threads(n=15):
 
 if __name__ == "__main__":
     try:
-        get_new_tor_ip()    
+        #get_new_tor_ip()    
         print("[INFO] Iniciando threads...")
         threads = start_threads()
 
