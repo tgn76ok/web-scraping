@@ -15,7 +15,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 # ————— Configurações —————
 SITE_URL      = 'https://www.polemicaparaiba.com.br/politica/enquete-polemica-paraiba-em-quem-voce-votaria-para-ser-o-proximo-governador-da-paraiba/'
 CANDIDATE_ID  = 'choice-d6a33e0b-f11d-40d8-854b-b318f4cfa492-selector'
-THREADS       = 15
+THREADS       = 1
 PAGE_TIMEOUT  = 10
 SLEEP_BETWEEN = 1    # segundos entre ciclos
 HEADLESS      = True # ativa modo headless
