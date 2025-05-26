@@ -11,6 +11,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+import undetected_chromedriver as uc
 
 # ————— Configurações —————
 SITE_URL      = 'https://www.polemicaparaiba.com.br/politica/enquete-polemica-paraiba-em-quem-voce-votaria-para-ser-o-proximo-governador-da-paraiba/'
@@ -24,30 +25,34 @@ THRESHOLD     = 8.0  # % acima do 2º colocado para parar
 # evento para sinalizar parada
 stop_event = threading.Event()
 
+
 def init_driver():
-    options = webdriver.ChromeOptions()
+    options = uc.ChromeOptions()
+    
     if HEADLESS:
         options.add_argument('--headless')
+    
     options.add_argument('--disable-gpu')
     options.add_argument('--disable-extensions')
     options.add_argument('--incognito')
     options.add_argument('--disable-blink-features=AutomationControlled')
-    options.page_load_strategy = 'eager'
-    options.add_experimental_option("prefs", {
-        "profile.managed_default_content_settings.images": 2
-    })
+    options.add_argument('--no-sandbox')
+    
+    prefs = {"profile.managed_default_content_settings.images": 2}
+    options.add_experimental_option("prefs", prefs)
 
     user_agents = [
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/91.0.4472.124 Safari/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/91.0.4472.114 Safari/537.36",
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/91.0.4472.114 Safari/537.36"
+        "Mozilla/5.0 (Linux; U; Android 10; en-US; SM-A107F) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 UCBrowser/13.3.8.1305 Mobile Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/91.0.4472.124 Safari/537.36"
     ]
     options.add_argument(f'--user-agent={random.choice(user_agents)}')
 
-    driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=options
-    )
+    options.proxy = {
+        'http': 'socks5://127.0.0.1:9050',
+        'https': 'socks5://127.0.0.1:9050'
+    }
+
+    driver = uc.Chrome(options=options)
     driver.set_page_load_timeout(PAGE_TIMEOUT)
     driver.implicitly_wait(3)
     return driver
